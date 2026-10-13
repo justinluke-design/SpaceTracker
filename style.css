@@ -1,0 +1,8 @@
+.sat-label {
+  color: #ffd866;
+  font: 11px sans-serif;
+  background: rgba(39, 39, 39, 0.55);
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
