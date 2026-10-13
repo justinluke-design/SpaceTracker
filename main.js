@@ -18,7 +18,7 @@ const CATEGORIES = {
   'Scientific':       { color: 0x22d3ee, groups: ['science'] },
   'Military & Radar': { color: 0xf87171, groups: ['military', 'radar'] },
   'Stations': {
-  color: 0xffffff,
+  color: 0xE8E1DF,
   groups: ['stations'],
   only: [25544, 48274],
   size: 0.2,
@@ -60,6 +60,7 @@ addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  labelRenderer.setSize(innerWidth, innerHeight);   // keeps labels aligned
 });
 
 // Lighting
@@ -225,14 +226,13 @@ addStars(250, 8);    // a few big, blurrier ones
 function buildFilterPanel() {
   const panel = document.createElement('div');
   panel.style.cssText =
-    'position:fixed;top:12px;right:12px;padding:10px 14px;background:rgba(255, 255, 255, 0.13);' +
-    'color:#fff;font:14px sans-serif;border-radius:8px;';
-  panel.innerHTML = '<div style="margin-bottom:6px"><b>Categories</b></div>';
+    panel.className = 'filter-panel';
+panel.innerHTML = '<div class="filter-title"><b>Categories</b></div>';
 
   for (const [name, cfg] of Object.entries(CATEGORIES)) {
     const count = sats.filter((s) => s.category === name).length;
     const row = document.createElement('label');
-    row.style.cssText = 'display:flex;align-items:center;gap:2px;margin:2px 0;cursor:pointer;';
+    row.className = 'filter-row';
     row.innerHTML =
       `<input type="checkbox" checked>` +
       `<span style="width:12px;height:12px;border-radius:50%;background:${hex(cfg.color)}"></span>` +
@@ -303,9 +303,7 @@ function animate() {
 let timeSpeed = 1;
 
 const panel = document.createElement('div');
-panel.style.cssText =
-  'position:fixed;top:12px;left:12px;padding:10px 14px;background:rgba(0,0,0,0.6);' +
-  'color:#fff;font:14px sans-serif;border-radius:8px;';
+panel.className = 'speed-panel'
 panel.innerHTML = `
   <div>Time speed: <b id="speedLabel">1.0×</b></div>
   <input id="speedSlider" type="range" min="-1" max="4" step="0.01" value="0" style="width:220px">
