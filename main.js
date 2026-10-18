@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as satellite from 'satellite.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { createEarth } from './earth.js'; // importing new stylized earth
 
 // Scale and size constants
 const SCALE = 1000;                 // 1 scene unit = 1000 km
@@ -9,7 +10,7 @@ const EARTH_RADIUS = 6371 / SCALE;  // Earth is about 6.37 units wide
 const TIME_SPEED = 1;                // 1 = real time. Try 60 to see motion faster.
 
 // Categories
-const PER_CATEGORY = 25;
+const PER_CATEGORY = 50;
 
 const CATEGORIES = {
   'Weather & Earth':  { color: 0x4ade80, groups: ['weather', 'resource'] },
@@ -70,13 +71,15 @@ const sunLight = new THREE.DirectionalLight(0xffffff, 2);
 sunLight.position.set(50, 20, 30);
 scene.add(sunLight);
 
-// Globe
-const earth = new THREE.Mesh(
-  new THREE.SphereGeometry(EARTH_RADIUS, 32, 32),
-  new THREE.MeshStandardMaterial({ color: 0x2266cc })
-);
-scene.add(earth);
+// Globe (old)
+//const earth = new THREE.Mesh(
+ // new THREE.SphereGeometry(EARTH_RADIUS, 32, 32),
+ // new THREE.MeshStandardMaterial({ color: 0x2266cc })
+//);
+//scene.add(earth);
 
+// New stylized Earth
+const { earth, update: updateEarth } = createEarth(scene, EARTH_RADIUS);
 
 // Satellie data fetch
 async function getGroup(group) {
@@ -148,19 +151,38 @@ records = cfg.only
 
       const dot = new THREE.Mesh(
         new THREE.SphereGeometry(0.12, 16, 16),
-        new THREE.MeshBasicMaterial({ color: cfg.color })
+        new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true })  // transparent so it can be dimmed
       );
-      group.add(dot, makeOrbitLine(satrec, periodMinutes, cfg.color));
+
+      // Invisible, bigger sphere: makes the tiny dot much easier to click
+      const hit = new THREE.Mesh(
+        new THREE.SphereGeometry(0.45, 8, 8),
+        new THREE.MeshBasicMaterial({ visible: false })
+      );
+      dot.add(hit);
+
+      const line = makeOrbitLine(satrec, periodMinutes, cfg.color);
+      group.add(dot, line);
 
       const div = document.createElement('div');
       div.className = 'sat-label';
       div.style.color = hex(cfg.color);
       div.textContent = cfg.names?.[rec.NORAD_CAT_ID] ?? rec.OBJECT_NAME;
       const label = new CSS2DObject(div);
-      label.position.set(0.25, 0.25, 0);
+      label.position.set(0.15, 0.05, 0);
       dot.add(label);
 
-      sats.push({ name: rec.OBJECT_NAME, satrec, dot, label, category: name });
+      const entry = {
+        name: rec.OBJECT_NAME,
+        displayName: cfg.names?.[rec.NORAD_CAT_ID] ?? rec.OBJECT_NAME,
+        id: Number(rec.NORAD_CAT_ID),
+        designator: rec.OBJECT_ID,
+        satrec, dot, line, hit, label,
+        category: name,
+        color: cfg.color,
+      };
+      hit.userData.sat = entry;     // lets a click on the hit sphere find its satellite
+      sats.push(entry);
     }
   }
 
@@ -171,6 +193,7 @@ records = cfg.only
 
 // Category Names
 function setCategoryVisible(name, visible) {
+  if (!visible && selected?.category === name) closePopup();
   categoryGroups[name].visible = visible;
   for (const s of sats) {
     if (s.category === name) s.label.visible = visible;   // labels are HTML, so hide them separately
@@ -227,7 +250,16 @@ function buildFilterPanel() {
   const panel = document.createElement('div');
   panel.style.cssText =
     panel.className = 'filter-panel';
-panel.innerHTML = '<div class="filter-title"><b>Categories</b></div>';
+panel.innerHTML =
+  '<button class="filter-tab" aria-label="Show or hide categories"></button>' +
+  '<div class="filter-title"><b>C<span class="tight" style="letter-spacing: -0.09em;">a</span>tegories</b></div>';
+
+  const list = document.createElement('div');       // holds the checkbox rows
+list.className = 'filter-list';
+panel.appendChild(list);
+
+// the side tab slides the list in and out (CSS only uses this on mobile)
+panel.querySelector('.filter-tab').addEventListener('click', () => panel.classList.toggle('open'));
 
   for (const [name, cfg] of Object.entries(CATEGORIES)) {
     const count = sats.filter((s) => s.category === name).length;
@@ -236,9 +268,9 @@ panel.innerHTML = '<div class="filter-title"><b>Categories</b></div>';
     row.innerHTML =
       `<input type="checkbox" checked>` +
       `<span style="width:12px;height:12px;border-radius:50%;background:${hex(cfg.color)}"></span>` +
-      `${name} (${count})`;
+      `${name}`; //(${count}) if you want the count
     row.querySelector('input').addEventListener('change', (e) => setCategoryVisible(name, e.target.checked));
-    panel.appendChild(row);
+    list.appendChild(row);
   }
   document.body.appendChild(panel);
 }
@@ -290,7 +322,10 @@ function animate() {
     s.label.element.style.visibility = isBehindEarth(s.dot.position) ? 'hidden' : 'visible';
   }
 
-  earth.rotation.y = satellite.gstime(now);
+  updatePopupLive(now);    
+
+ // earth.rotation.y = satellite.gstime(now); // this was for old earth
+  updateEarth(now, satellite.gstime(now));
   controls.update();
   renderer.render(scene, camera); 
   labelRenderer.render(scene, camera);
@@ -305,8 +340,8 @@ let timeSpeed = 1;
 const panel = document.createElement('div');
 panel.className = 'speed-panel'
 panel.innerHTML = `
-  <div>Time speed: <b id="speedLabel">1.0×</b></div>
-  <input id="speedSlider" type="range" min="-1" max="4" step="0.01" value="0" style="width:220px">
+  <div>Time<br>speed:<br><span id="speedLabel">1.0×</span></div>
+  <input id="speedSlider" type="range" min="-1" max="4" step="0.01" value="0" style="">
 `;
 document.body.appendChild(panel);
 
@@ -327,6 +362,234 @@ labelRenderer.setSize(innerWidth, innerHeight);
 labelRenderer.domElement.style.position = 'absolute';
 labelRenderer.domElement.style.top = '0';
 labelRenderer.domElement.style.pointerEvents = 'none';   // IMPORTANT: lets your mouse reach the globe
+labelRenderer.domElement.classList.add('label-layer');   // NEW
 document.body.appendChild(labelRenderer.domElement);
 
 labelRenderer.setSize(innerWidth, innerHeight);
+
+
+// =====================================================
+// SELECT / HIGHLIGHT / POP-UP
+// =====================================================
+const $ = (id) => document.getElementById(id);
+const popupEl = $('sat-popup');
+
+const HILITE = 0xffb000;      // bright yellow-orange for the selected satellite
+const DIM_SAT = 0.35;         // opacity of the other satellites
+const DIM_LINE = 0.15;        // opacity of the other orbit lines
+
+let selected = null;          // the satellite entry currently open
+
+// Soft glow: reuses your makeStarTexture(), tinted orange and added to the selected dot
+const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: makeStarTexture(),
+  color: HILITE,
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+}));
+glow.scale.set(0.4, 0.4, 1);  // gloe for circle satellite
+const ORBIT_GLOW_LAYERS = [
+  { radius: 0.025, opacity: 0.55 }, // radius for glowing effect, lines
+  { radius: 0.055, opacity: 0.22 },
+  { radius: 0.10,  opacity: 0.08 },
+];
+const orbitGlow = new THREE.Group();
+scene.add(orbitGlow);
+
+// SATCAT "owner" code -> [flag country code, display name].
+// Codes I wasn't sure of just show the raw code, so add more as you find them.
+const OWNERS = {
+  US:   ['us', 'United States'],
+  CIS:  ['ru', 'Russia / CIS'],
+  PRC:  ['cn', 'China'],
+  JPN:  ['jp', 'Japan'],
+  IND:  ['in', 'India'],
+  UK:   ['gb', 'United Kingdom'],
+  FR:   ['fr', 'France'],
+  GER:  ['de', 'Germany'],
+  CA:   ['ca', 'Canada'],
+  ITA:  ['it', 'Italy'],
+  SKOR: ['kr', 'South Korea'],
+  ISRA: ['il', 'Israel'],
+  UAE:  ['ae', 'United Arab Emirates'],
+  AUS:  ['au', 'Australia'],
+  SPN:  ['es', 'Spain'],
+  TURK: ['tr', 'Turkey'],
+  SAUD: ['sa', 'Saudi Arabia'],
+  BRAZ: ['br', 'Brazil'],
+  LUXE: ['lu', 'Luxembourg'],
+  NOR:  ['no', 'Norway'],
+  SING: ['sg', 'Singapore'],
+  ESA:  ['eu', 'European Space Agency'],
+  ISS:  [null, 'International (ISS partners)'],
+  NATO: [null, 'NATO'],
+};
+
+// --- SATCAT lookup (one request per satellite you click, cached for 7 days) ---
+const satcatCache = new Map();
+function loadSatcat(id) {
+  if (satcatCache.has(id)) return satcatCache.get(id);
+
+  const key = `satcat-${id}`;
+  try {
+    const c = JSON.parse(localStorage.getItem(key) || 'null');
+    if (c && Date.now() - c.time < 7 * 24 * 60 * 60 * 1000) {
+      const p = Promise.resolve(c.data);
+      satcatCache.set(id, p);
+      return p;
+    }
+  } catch {}
+
+  const p = fetch(`https://celestrak.org/satcat/records.php?CATNR=${id}&FORMAT=JSON`)
+    .then((r) => {
+      if (!r.ok) throw new Error(`SATCAT returned ${r.status}`);
+      return r.json();
+    })
+    .then((arr) => {
+      const data = arr[0];
+      try { localStorage.setItem(key, JSON.stringify({ time: Date.now(), data })); } catch {}
+      return data;
+    });
+  satcatCache.set(id, p);   // a failed request stays cached on purpose: no retry loop
+  return p;
+}
+
+function formatDate(iso) {
+  if (!iso) return 'Unknown';
+  const d = new Date(iso + 'T00:00:00');            // date only, so no timezone shift
+  return d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// --- Highlight: dim everything else, light up the selected one ---
+function setHighlight(s) {
+  for (const o of sats) {
+    const isSel = o === s;
+    const dim = !!s && !isSel;
+
+    o.dot.material.color.setHex(isSel ? HILITE : o.color);
+    o.dot.material.opacity = dim ? DIM_SAT : 1;
+    o.dot.scale.setScalar(isSel ? 1.6 : 1);
+
+    o.line.material.color.setHex(isSel ? HILITE : o.color);
+    o.line.material.opacity = isSel ? 1 : dim ? DIM_LINE : 0.45;
+
+    o.label.element.classList.toggle('dimmed', dim);      // CSS handles the fade
+    o.label.element.classList.toggle('selected', isSel);
+  }
+  if (s) s.dot.add(glow); else glow.removeFromParent();
+  if (s) showOrbitGlow(s); else clearOrbitGlow();          // NEW
+}
+
+
+function showOrbitGlow(s) {
+  clearOrbitGlow();
+
+  // rebuild the orbit path from the points the line already has
+  const pos = s.line.geometry.getAttribute('position');
+  const pts = [];
+  for (let i = 0; i < pos.count; i++) pts.push(new THREE.Vector3().fromBufferAttribute(pos, i));
+  const curve = new THREE.CatmullRomCurve3(pts);
+
+  for (const { radius, opacity } of ORBIT_GLOW_LAYERS) {
+    orbitGlow.add(new THREE.Mesh(
+      new THREE.TubeGeometry(curve, 200, radius, 8, false),
+      new THREE.MeshBasicMaterial({
+        color: HILITE,
+        transparent: true,
+        opacity,
+        blending: THREE.AdditiveBlending,   // overlapping layers add up brightness, like your star glow
+        depthWrite: false,
+      })
+    ));
+  }
+}
+
+function clearOrbitGlow() {
+  for (const m of [...orbitGlow.children]) {
+    m.geometry.dispose();               // frees memory so repeated clicks don't pile up
+    m.material.dispose();
+    orbitGlow.remove(m);
+  }
+}
+
+
+// --- Open / close ---
+function openPopup(s) {
+  selected = s;
+  setHighlight(s);
+
+  $('popup-name').textContent = s.displayName;
+  $('popup-code').textContent = `NORAD ${s.id} \u00b7 ${s.designator}`;
+  $('popup-category').textContent = s.category;
+  popupEl.style.setProperty('--cat', hex(s.color));       // CSS uses this for the top border
+
+  $('popup-country').textContent = 'Loading\u2026';
+  $('popup-flag').hidden = true;
+  $('popup-launch').textContent = 'Loading\u2026';
+  $('popup-speed').textContent = '--';
+  $('popup-altitude').textContent = '--';
+
+  popupEl.classList.add('open');
+
+  loadSatcat(s.id)
+    .then((info) => {
+      if (selected !== s) return;                         // user already clicked something else
+      console.log('SATCAT record:', info);                // check the real field names here
+      const [iso, countryName] = OWNERS[info.OWNER] ?? [null, info.OWNER || 'Unknown'];
+      $('popup-country').textContent = countryName;
+      const flag = $('popup-flag');
+      if (iso) { flag.src = `https://flagcdn.com/w40/${iso}.png`; flag.alt = countryName; flag.hidden = false; }
+      $('popup-launch').textContent = formatDate(info.LAUNCH_DATE);
+    })
+    .catch((err) => {
+      if (selected !== s) return;
+      console.warn(err);
+      $('popup-country').textContent = 'Unavailable';
+      $('popup-launch').textContent = s.designator.slice(0, 4);   // fall back to the launch year
+    });
+}
+
+function closePopup() {
+  selected = null;
+  setHighlight(null);
+  popupEl.classList.remove('open');
+}
+
+// Speed and altitude change as the satellite moves, so animate() calls this each frame
+function updatePopupLive(now) {
+  if (!selected) return;
+  const pv = satellite.propagate(selected.satrec, now);
+  if (!pv || !pv.position || !pv.velocity) return;
+
+  const alt = satellite.eciToGeodetic(pv.position, satellite.gstime(now)).height;   // km
+  const v = Math.hypot(pv.velocity.x, pv.velocity.y, pv.velocity.z);               // km/s
+
+  $('popup-altitude').textContent = `${alt.toFixed(0)} km`;
+  $('popup-speed').textContent = `${v.toFixed(2)} km/s (${Math.round(v * 3600).toLocaleString()} km/h)`;
+}
+
+// --- Clicking: a satellite opens it, empty space or the globe closes it ---
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let downX = 0, downY = 0;
+
+renderer.domElement.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; });
+
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (Math.hypot(e.clientX - downX, e.clientY - downY) > 5) return;   // that was a drag (orbiting), not a click
+
+  pointer.x = (e.clientX / innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+
+  // only hit spheres of visible categories, plus the Earth so it blocks satellites behind it
+  const targets = sats.filter((s) => categoryGroups[s.category].visible).map((s) => s.hit);
+  const first = raycaster.intersectObjects([earth, ...targets], false)[0]?.object;
+
+  if (first && first.userData.sat) openPopup(first.userData.sat);
+  else closePopup();
+});
+
+$('popup-close').addEventListener('click', closePopup);
+addEventListener('keydown', (e) => { if (e.key === 'Escape') closePopup(); });

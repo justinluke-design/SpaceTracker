@@ -5,7 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Satellite Tracker</title>
     <link rel="stylesheet" href="style.css">
+
+
     <link rel="stylesheet" href="https://use.typekit.net/ffi3mwb.css">
+    <link rel="stylesheet" href="https://use.typekit.net/lpo3bxz.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+
+
      <style>body { margin: 0; overflow: hidden; background: #979797; }</style>
 
          <script type="importmap">
@@ -13,7 +22,8 @@
   "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
     "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-    "satellite.js": "https://cdn.jsdelivr.net/npm/satellite.js@7.1.0/+esm"
+    "satellite.js": "https://cdn.jsdelivr.net/npm/satellite.js@7.1.0/+esm",
+    "topojson-client": "https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm"
   }
 }
 </script>
@@ -21,9 +31,61 @@
   </head>
   <body>
 
-   
-<h class="title">Space Case</h>
+     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Option A: noise that matches your concrete bumps
+      <filter id="rough-noise" x="-2%" y="-2%" width="104%" height="104%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.065 0.05" numOctaves="5" seed="7" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+-->
+      <!-- Option B: displaced by your actual concrete.svg -->
+      <filter id="rough-texture" x="0" y="0" width="100%" height="100%" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+        <feImage href="concrete.svg" x="0" y="0" width="800" height="400" result="tex"/>
+        <feTile in="tex" result="tiled"/>
+        <feColorMatrix in="tiled" type="matrix" values="4 0 0 0 -2.2  4 0 0 0 -2.2  0 0 0 0 0  0 0 0 0 1" result="boost"/>
+        <feDisplacementMap in="SourceGraphic" in2="boost" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+
+
+<h class="title">Lost in Space</h>
     
+<!-- Satellite pop-up (hidden until clicked) -->
+    <div id="sat-popup" role="dialog" aria-labelledby="popup-name">
+      <button id="popup-close" class="popup-close" aria-label="Close">&times;</button>
+
+      <h2 id="popup-name" class="popup-name">Satellite name</h2>
+      <div id="popup-code" class="popup-code">NORAD ---</div>
+
+      <div class="popup-row">
+        <span class="popup-label">Country</span>
+        <span class="popup-value">
+          <img id="popup-flag" class="popup-flag" alt="" hidden>
+          <span id="popup-country">--</span>
+        </span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Category</span>
+        <span class="popup-value" id="popup-category">--</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Speed</span>
+        <span class="popup-value" id="popup-speed">--</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Altitude</span>
+        <span class="popup-value" id="popup-altitude">--</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Launched</span>
+        <span class="popup-value" id="popup-launch">--</span>
+      </div>
+    </div>
+
+
+   <!--three.js script-->
 
     <script type="module" src="./main.js"></script>
   </body>

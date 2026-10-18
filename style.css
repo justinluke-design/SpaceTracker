@@ -1,33 +1,57 @@
 .sat-label {
-  color: #ffd866;
-  font-family: "neue-haas-grotesk-text", sans-serif;
-  font-weight: 200;
+  font-family: "courier-new", sans-serif;
+  font-weight: 700;
   font-style: normal;
-  background: rgba(54, 54, 54, 0.538);
-  padding: 1px 5px;
-  border-radius: 3px;
+  font-size: 0.5vw;
+  background-image:
+    linear-gradient(var(--ui-grid-labels-color) 1px, transparent 1px),         /* horizontal lines */
+    linear-gradient(90deg, var(--ui-grid-labels-color) 1px, transparent 1px);  /* vertical lines */
+  background-size: var(--ui-grid-labels-size) var(--ui-grid-labels-size);
+  background-color: rgba(19, 83, 3, 0.4);
+  border: 0.1px solid rgba(47, 202, 8, 0.6);
+  border-radius: 6px;
+  padding: 0.4vw 0.6vw;
+  border-radius: 5px;
   white-space: nowrap;
+  z-index: 1; 
+}
+
+.label-layer {
+  z-index: 1;
+}
+
+:root {
+  --ui-grid-labels-color:rgba(47, 202, 8, 0.1);   /* line colour: keep the alpha low for "subtle" */
+  --ui-grid-labels-size: 7px;                      /* spacing between lines */
 }
 
 .filter-panel {
   position: fixed;
-  top: 5%;
-  right: 5%;
+  z-index: 20;
+  top: 2%;
+  right: 2%;
   padding: 10px 14px;
-  background: rgba(166, 150, 150, 0.13);
-  font-style: normal;
-  font-family: "neue-haas-grotesk-text", sans-serif;
-  color: #E8E1DF;
-  border-radius: 8px;
+  background-image:
+    linear-gradient(var(--ui-grid-color) 1px, transparent 1px),         /* horizontal lines */
+    linear-gradient(90deg, var(--ui-grid-color) 1px, transparent 1px);  /* vertical lines */
+  background-size: var(--ui-grid-size) var(--ui-grid-size);
+  background-color: rgba(47, 202, 8, 0.4);
+  border: 0.1px solid rgba(47, 202, 8, 0.6);
+  border-radius: 6px;
+  box-shadow: 0 0px 3px #2FCA08, 0 0 10px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
 }
 
 /* categories */
 .filter-title {
   margin-bottom: 6px;
-  color: #ffd866;
-  font-family: "neue-haas-grotesk-text", sans-serif;
+  color: rgb(123, 250, 91);
+  font-family: "michroma", sans-serif;
   font-weight: 700;
+  line-height: 2;
+  font-size: 1.5em;
   text-transform: uppercase;
+  letter-spacing: 0.09em;
 }
 
 .filter-row {
@@ -36,47 +60,413 @@
   gap: 6px;
   margin: 2px 0;
   cursor: pointer;
+  font-family: "courier-new", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(145, 255, 117);
+}
+
+.filter-row input {
+  accent-color: rgb(47, 202, 8); 
+  color: rgb(123, 250, 91);     /* colour of the tick and the filled box */
+  width: 1.2em;
+  height: 1.2em;
+  margin: 0;
+  cursor: pointer;
+}
+
+.filter-close { 
+  display: none;
+}
+
+.filter-tab { 
+  display: none;
+}
+
+
+:root {
+  --title-space: 12vw;   /* roughly how tall "Space Case" is: tweak until the slider sits just above it */
 }
 
 .speed-panel {
   position: fixed;
-  top: 5%;
-  left: 5%;
-  padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  font: 14px "neue-haas-grotesk-text", sans-serif;
-  border-radius: 8px;
+  left: 0;
+  bottom: calc(var(--title-space) + 12px);
+  box-sizing: border-box;
+  margin: 2%;
+  padding: 3vw 1.5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vw;
+  background-image:
+    linear-gradient(var(--ui-grid-color) 1px, transparent 1px),         /* horizontal lines */
+    linear-gradient(90deg, var(--ui-grid-color) 1px, transparent 1px);  /* vertical lines */
+  background-size: var(--ui-grid-size) var(--ui-grid-size);
+  background-color: rgba(47, 202, 8, 0.4);
+  border: 0.1px solid rgba(47, 202, 8, 0.6);
+  border-radius: 6px;
+  box-shadow: 0 0px 3px #2FCA08, 0 0 10px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  color:rgb(123, 250, 91);
+  font-family: "michroma", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  z-index: 60;                          /* above the title (50), below the pop-up (100) */
 }
+
+/* "Time speed:" stacked over the number so the panel stays narrow */
+.speed-panel > div {
+  text-align: center;
+  line-height: 1;
+}
+.speed-panel > div b { display: block; }
 
 #speedSlider {
-  width: 220px;
-  font: 14px "neue-haas-grotesk-text", sans-serif;
+  writing-mode: vertical-lr;            /* turns the slider upright */
+  direction: rtl;                       /* slow at the bottom, fast at the top */
+  width: 20px;
+  height: min(40vh, 220px);
+  margin: 0;
+}
+
+:root {
+  --ui-grid-color:rgba(47, 202, 8, 0.1);   /* line colour: keep the alpha low for "subtle" */
+  --ui-grid-size: 14px;                      /* spacing between lines */
 }
 
 
+#speedLabel {
+  line-height: 2;
+}
 
-.title {
-  position: fixed;      /* sticks to the window, ignores scrolling */
+
+/* .title {
+  position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
   margin: 0; 
   text-align: center;
-  font-size: 15.5vw;;
+  font-size: 15vw;
   line-height: 0.6;
   color: #E8E1DF;
-  font: 700 "neue-haas-grotesk-text", sans-serif;;
+  font-family: "neue-haas-grotesk-text", sans-serif;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
   z-index: 10;
-  pointer-events: none; /* critical for orbit controls */
+  pointer-events: none;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
   z-index: 50;
 }
+*/
 
+.title {
+  position: fixed;
+  z-index: 50;                          /* above the globe (0) and labels (20), below the pop-up (100) */
+  bottom: 1.5vw;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding-top: 0.3em;
+  text-align: center;
+  font-family: "michroma", sans-serif;
+  font-weight: 700;
+  font-size: 8.5vw;
+  line-height: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(47, 202, 8, 0.4);
+ -webkit-text-stroke: 0.001px #2FCA08;
+ text-shadow: 0 0 5px rgba(47, 202, 8, 0.5), 0 0 15px rgba(91, 206, 62, 0.5) ;
+
+  
+  /* 
+  background-color: #8d8d8d;          
+  background-image: url("./concrete.svg"); 
+  background-size: 800px 400px; 
+  background-repeat: repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* filter: drop-shadow(0 0px 120px rgba(0, 0, 0, 0.6));  replaces text-shadow */
+  /*filter: url(#rough-texture) drop-shadow(0 0px 100px rgba(0, 0, 0, 0.6)); */
+
+  pointer-events: none;                /* critical for orbit controls */
+  z-index: 50;
+}
+
+
+ 
+
+
+/* Pop-ups */
+
+#sat-popup {
+  position: fixed;
+  right: 3%;
+  top: 50%;
+  width: 280px;
+  padding: 16px 18px 18px;
+  z-index: 100;                       /* above the title (50) */
+  backdrop-filter: blur(10px);
+  color: #E8E1DF;
+  font-family: "michroma", sans-serif;
+  border-top: 3px solid var(--cat, #ffb000);   /* --cat is set from JS to the category colour */
+  background-image:
+    linear-gradient(var(--ui-grid-color) 1px, transparent 1px),         /* horizontal lines */
+    linear-gradient(90deg, var(--ui-grid-color) 1px, transparent 1px);  /* vertical lines */
+  background-size: var(--ui-grid-size) var(--ui-grid-size);
+  background-color: rgba(47, 202, 8, 0.4);
+  border: 0.1px solid rgba(47, 202, 8, 0.6);
+  border-radius: 6px;
+  box-shadow: 0 0px 3px #2FCA08, 0 0 10px rgba(255, 255, 255, 0.5);
+
+  /* CLOSED state */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;                /* so it never blocks the globe while hidden */
+  transform: translateY(-50%) translateX(-16px) scale(0.96);
+  /* visibility waits 0.3s so the fade-out finishes before it disappears */
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+}
+
+/* OPEN state: JS adds the "open" class */
+#sat-popup.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0) scale(1);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s;
+}
+
+.popup-name {
+  margin: 0 28px 2px 0;                /* right margin leaves room for the X */
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.07em;
+  color: rgb(123, 250, 91);
+}
+
+.popup-code {
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: rgba(123, 250, 91, 0.6);
+}
+
+.popup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+  
+  font-size: 14px;
+  
+}
+
+.popup-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.0em;
+  color: rgba(123, 250, 91, 0.8);
+}
+
+.popup-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: right;
+  font-family: "courier", serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(145, 255, 117);
+}
+
+.popup-flag { width: 22px; height: auto; border-radius: 2px; }
+.popup-flag[hidden] { display: none; }
+
+.popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(47, 202, 8, 0.4);
+  color: rgb(123, 250, 91);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.popup-close:hover { background: rgba(255, 255, 255, 0.2); transform: rotate(90deg); }
+
+/* ---------- Satellite labels when something is selected ---------- */
+.sat-label { transition: opacity 0.3s ease; }
+.sat-label.dimmed { opacity: 0.15; }
+.sat-label.selected {
+  color: #ffb000 !important;           /* !important beats the colour JS sets inline */
+  background: rgba(0, 0, 0, 0.75);
+}
+
+
+/* mobile labels & panels sizes are smaller */
+ @media (max-width: 700px) {
+     .sat-label { font-size: 10px; padding: 0 3px; }
+
+     /* categories become a drawer: a tab sits on the right edge, tap it to slide the list out */
+     .filter-panel {
+       right: 0; 
+       top: 4%;                                 /* flush with the screen edge */
+       border-radius: 6px 0 0 6px;
+       transform: translateX(80%) scale(0.8);     /* closed: slid off-screen so only the tab shows (80% matches the 0.8 scale) */
+       transform-origin: top right;
+       transition: transform 0.3s ease;
+       box-shadow: none;
+     }
+     .filter-panel.open { transform: translateX(0) scale(0.8); }
+
+     .filter-tab {
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       position: absolute;
+       top: 0%;
+       left: -36px;                               /* sits just outside the panel's left edge */
+       width: 36px;
+       height: 56px;
+       padding: 0;
+       border-radius: 6px 0 0 6px;
+       background-image:
+    linear-gradient(var(--ui-grid-color) 1px, transparent 1px),         /* horizontal lines */
+    linear-gradient(90deg, var(--ui-grid-color) 1px, transparent 1px);  /* vertical lines */
+  background-size: var(--ui-grid-size) var(--ui-grid-size);
+  background-color: rgba(47, 202, 8, 0.4);
+  border: 0.1px solid rgba(47, 202, 8, 0.6);
+       font-size: 12vw;
+       line-height: 1;
+       cursor: pointer;
+
+       color: rgb(123, 250, 91);
+     }
+     .filter-tab::before { content: "\2039"; }                       /* left arrow: pull out */
+     .filter-panel.open .filter-tab::before { content: "\203A"; }    /* right arrow: push back in */
+
+     .speed-panel {
+       transform: scale(0.8);
+       transform-origin: bottom left;             /* bottom-left corner stays put, so it still sits above the title */
+     }
+
+     #sat-popup{
+       transform: scale(0.6);
+     }
+
+     #sat-popup.open{
+       transform: scale(0.6);
+     }
+   }
 
 /* font-family: "neue-haas-grotesk-text", sans-serif;
 font-weight: 700;
 font-style: normal;
 */
+
+/* ============ EARTH THEME: edit these and the globe updates live ============ */
+:root {
+  /* look: "map" (glowing countries) or "dots" (dot-matrix land) */
+  --earth-style: map;
+  --map-resolution: 4096;          /* sharper = bigger. Phones: see the media query below */
+
+  /* map look (these can use rgba()) */
+  --earth-ocean: #062e0c;
+  --earth-land: rgba(0, 210, 18, 0.3);
+  --earth-border: #3aff75;         /* country borders + coastlines */
+  --earth-border-width: 0.5
+  ;         /* 0 = no borders */
+  --earth-border-glow: #00ff0d;
+  --earth-border-glow-size: 0;     /* 0 = no glow */
+  --earth-grid: rgba(218, 218, 218, 0.096);
+  --earth-grid-step: 7;           /* degrees between grid lines, 0 = no grid */
+
+  /* dots look */
+  --earth-dot-color: #3aff5b;
+  --earth-dot-spacing: 1.1;        /* degrees between dots: smaller = denser */
+  --earth-dot-size: 0.012;
+
+  /* atmosphere (use #hex colours here) */
+  --atmo-outer: #4fff9e;           /* outer edge of the close-in glow */
+  --atmo-edge: #94ffb8;            /* the pale ring hugging the planet */
+  --atmo-glow: 1;                /* close-in glow brightness */
+  --atmo-haze: #8aff90;            /* thin haze on the globe's rim */
+  --atmo-haze-strength: 0.2;
+  --atmo-haze-reach: 5;            /* lower = the edge haze creeps further across the globe */
+  --atmo-haze-face: 0.12;          /* mist drifting over the whole face of the globe, 0 = off */
+  --atmo-size: 1.01;               /* how far the close-in glow reaches (1.04 = 4% bigger than Earth) */
+  --atmo-sun: 1;                   /* 1 = brighter on the sunny side, 0 = even all the way round */
+
+  /* outer haze: the big soft cloud around the planet */
+  --outer-haze: #4aff86;
+  --outer-haze-strength: 0.1;     /* 0 = off */
+  --outer-haze-size: 1.1;          /* how far out it reaches (1.3 = 30% bigger than Earth) */
+
+  /* turbulence: applies to all three atmosphere layers */
+  --atmo-turbulence: 0.8;          /* 0 = smooth and clean, 1 = very wispy */
+  --atmo-turbulence-scale: 4;      /* bigger = smaller, finer swirls */
+  --atmo-turbulence-speed: 0.15;   /* how fast it drifts, 0 = frozen */
+}
+
+@media (max-width: 700px) {
+  :root {
+    --map-resolution: 2048;        /* lighter on phones */
+    --earth-border-width: 1;       /* thicker lines so they survive the smaller texture */
+    --outer-haze-size: 1.1;        /* keeps the haze from swamping a small screen */
+  }
+}
+
+
+/* ============ SITE-WIDE HAZE ============ */
+:root {
+  --fog-color: 138, 255, 144;      /* r, g, b of the haze (matches --atmo-haze #8aff90) */
+  --fog-edge: 0.28;                /* darkening/haze at the screen edges, 0 = none */
+  --fog-floor: 0.22;               /* mist rising from the bottom, 0 = none */
+  --fog-noise: 0.50;               /* strength of the drifting cloud texture, 0 = none */
+  --fog-speed: 90s;                /* time for one drift loop */
+}
+
+/* edges + bottom mist, no animation, very cheap */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 15;                     /* above the globe (0) and labels, below the panels (20) */
+  pointer-events: none;            /* critical: never blocks orbit controls or clicks */
+  background:
+    radial-gradient(ellipse at center, transparent 45%, rgba(var(--fog-color), var(--fog-edge)) 120%),
+    linear-gradient(to top, rgba(var(--fog-color), var(--fog-floor)), transparent 40%);
+}
+
+/* slowly drifting cloud texture 
+body::after {
+  content: "";
+  position: fixed;
+  inset: -5%;                    
+  z-index: 15;
+  pointer-events: none;
+  opacity: var(--fog-noise);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800'%3E%3Cfilter id='n' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.005' numOctaves='4' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.54  0 0 0 0 1  0 0 0 0 0.56  0 0 0 1.6 -0.5'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  animation: fog-drift var(--fog-speed) linear infinite; 
+}
+@keyframes fog-drift {
+  to { transform: translate3d(-100%, -100%, 0); }   
+} */
